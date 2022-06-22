@@ -7,7 +7,7 @@ import numpy as np
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = "rps/static/text"
+app.config['UPLOAD_FOLDER'] = "./rps/static/text"
 
 
 
