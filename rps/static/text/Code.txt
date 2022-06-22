@@ -1,0 +1,109 @@
+import robotarium as robotarium
+from rps.utilities.transformations import *
+from rps.utilities.barrier_certificates import *
+from rps.utilities.misc import *
+from rps.utilities.controllers import *
+
+import numpy as np
+import time
+
+robotList = []
+namesList123 = []
+
+class Robot:
+
+    def __init__(self, name, x, y, t):
+        self.target_points = []
+        self.currentPoint = 0
+        self.totalPoints = 0
+        self.finished = False
+        self.output_points = np.array([[],[],[]])
+        theta = t * 3.14/180
+        self.name = name
+        self.start_array = np.array([[x],[y],[theta]])
+        self.target_points.append((x,y,theta))
+        self.output_points = np.array([[x],[y],[theta]])
+    
+    def add_Target_Point(self,x,y,t):
+        self.totalPoints = self.totalPoints + 1
+        self.target_points.append((x,y,t*3.14/180))
+
+    def get_Target_Points(self):
+        return self.target_points
+
+    def update_Output_Points(self):
+        self.output_points[0] = self.target_points[self.currentPoint][0]
+        self.output_points[1] = self.target_points[self.currentPoint][1]
+        self.output_points[2] = self.target_points[self.currentPoint][2]
+    
+    def step_Current_Point(self):
+        self.currentPoint = self.currentPoint + 1
+        if(self.currentPoint > self.totalPoints):
+            self.finished = True
+        if(not self.finished):
+            self.update_Output_Points()
+    
+    def get_Output_Points(self):
+        return self.output_points
+
+    def check_Position(self,robot_num, pos, accuracy = .03):
+        if(not self.finished):
+            if((self.target_points[self.currentPoint][0]-accuracy< pos[0][robot_num] < self.target_points[self.currentPoint][0]+accuracy) and (self.target_points[self.currentPoint][1]-accuracy< pos[1][robot_num] < self.target_points[self.currentPoint][1]+accuracy)):
+                self.step_Current_Point()
+                return True
+            else:
+                return False
+    def get_Status(self):
+        return self.finished
+
+
+def Fill_Start_Array():
+    start_Array = np.array([[],[],[]])
+    for robot in robotList:
+        start_Array = np.append(start_Array,robot.get_Output_Points(), axis = 1)
+    return start_Array
+
+def Update_Target_Array(pos):
+    target_Array = np.array([[],[],[]])
+    for i in range(len(robotList)):
+        robotList[i].check_Position(i,pos)
+        target_Array = np.append(target_Array,robotList[i].get_Output_Points(), axis = 1)
+    print(target_Array)
+    return target_Array
+
+def Check_if_All_Done():
+    for robot in robotList:
+        if(robot.get_Status() == False):
+            return False
+    return True
+
+def New_Robot(name, x,y,t):
+    namesList123.append(name)
+    robotList.append(Robot(name,x,y,t))
+
+def Add_Target_Point(name, x,y,t):
+    robotList[namesList123.index(name)].add_Target_Point(x,y,t)
+
+New_Robot("Bob",0,0,0)
+New_Robot("Kim",.8,.8,90)
+
+Add_Target_Point("Bob",.8,.8,180)
+Add_Target_Point("Kim",0,0,90)
+
+r = robotarium.Robotarium(number_of_robots=len(robotList), show_figure=True, initial_conditions=Fill_Start_Array(), sim_in_real_time=False)
+unicycle_position_controller = create_hybrid_unicycle_pose_controller()
+uni_barrier_cert = create_unicycle_barrier_certificate()
+x = r.get_poses()
+r.step()
+
+t_end = time.time() + 60 * 5
+while time.time() < t_end:
+    x = r.get_poses()
+    dxu = unicycle_position_controller(x, Update_Target_Array(x))
+    dxu = uni_barrier_cert(dxu, x)
+    r.set_velocities(np.arange(len(robotList)), dxu)    
+    r.step()
+    if(Check_if_All_Done()):
+        break
+
+r.call_at_scripts_end()
