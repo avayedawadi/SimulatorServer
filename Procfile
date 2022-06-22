@@ -1,1 +1,1 @@
-web: gunicorn --chdir rps app:app
+web: gunicorn --bind 0.0.0.0:$PORT --chdir rps app:app
