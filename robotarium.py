@@ -55,8 +55,8 @@ class Robotarium(RobotariumABC):
             Even if you don't want to print the errors, calling this function at the
             end of your script will enable execution on the Robotarium testbed.
             """
-            image_folder = 'rps/images'
-            video_name = 'rps/static/uploads/video.mp4'
+            image_folder = './rps/images'
+            video_name = './rps/static/uploads/video.mp4'
 
             images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
             images = sorted(images, key=lambda x: (int(re.sub('\D','',x)),x))

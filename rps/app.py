@@ -25,7 +25,7 @@ def login():
             a = 'file uploaded'
         
         #open text file in read mode
-        text_file = open("rps/static/text/Code.txt", "r")
+        text_file = open("./rps/static/text/Code.txt", "r")
 
         #read whole file to a string
         code = text_file.read()
