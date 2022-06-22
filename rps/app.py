@@ -13,7 +13,7 @@ app.config['UPLOAD_FOLDER'] = "rps/static/text"
 
 @app.route('/')
 def hello():
-    return '<h1>Hello, World!</h1>'
+    return '<h1>Hello, World</h1>'
 
 @app.route('/simulationVideo',methods = ['POST'])
 def login():
