@@ -5,9 +5,6 @@ import robotarium
 import robotarium_abc
 import numpy as np
 import time
-from rq import Queue
-from worker import conn
-
 
 app = Flask(__name__)
 
@@ -37,9 +34,7 @@ def login():
         #read whole file to a string
         code = text_file.read()
         print(code)
-        q = Queue(connection=conn)
-        q.enqueue(exec,code,{})
-        
+        exec(code,{})
         
         
         return url_for('display_video')
