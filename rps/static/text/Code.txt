@@ -6,9 +6,7 @@ from rps.utilities.controllers import *
 
 import numpy as np
 import time
-
-robotList = []
-namesList123 = []
+import math
 
 class Robot:
 
@@ -18,6 +16,9 @@ class Robot:
         self.totalPoints = 0
         self.finished = False
         self.output_points = np.array([[],[],[]])
+        t=t%360
+        if(t>180):
+            t=t-360
         theta = t * 3.14/180
         self.name = name
         self.start_array = np.array([[x],[y],[theta]])
@@ -26,6 +27,9 @@ class Robot:
     
     def add_Target_Point(self,x,y,t):
         self.totalPoints = self.totalPoints + 1
+        t=t%360
+        if(t>180):
+            t=t-360
         self.target_points.append((x,y,t*3.14/180))
 
     def get_Target_Points(self):
@@ -46,16 +50,43 @@ class Robot:
     def get_Output_Points(self):
         return self.output_points
 
+    def angle_In_Range(self, angle, accuracy = .07):
+        if((self.target_points[self.currentPoint][2]-accuracy< angle< self.target_points[self.currentPoint][2]+accuracy)):
+            return True
+        else:
+            return False
+
     def check_Position(self,robot_num, pos, accuracy = .03):
         if(not self.finished):
-            if((self.target_points[self.currentPoint][0]-accuracy< pos[0][robot_num] < self.target_points[self.currentPoint][0]+accuracy) and (self.target_points[self.currentPoint][1]-accuracy< pos[1][robot_num] < self.target_points[self.currentPoint][1]+accuracy)):
+            if((self.target_points[self.currentPoint][0]-accuracy< pos[0][robot_num] < self.target_points[self.currentPoint][0]+accuracy) and (self.target_points[self.currentPoint][1]-accuracy< pos[1][robot_num] < self.target_points[self.currentPoint][1]+accuracy) and (self.angle_In_Range(pos[2][robot_num]))):
                 self.step_Current_Point()
                 return True
             else:
                 return False
+
     def get_Status(self):
         return self.finished
 
+    def move_Forward(self, distance):
+        curX = self.target_points[self.totalPoints][0]
+        curY = self.target_points[self.totalPoints][1]
+        curT = self.target_points[self.totalPoints][2]
+        addX = distance * math.cos(curT)
+        addY = distance * math.sin(curT)
+        self.add_Target_Point((curX+addX),(curY+addY),(curT*180/3.14))
+    
+    def turn(self,by):
+          curX = self.target_points[self.totalPoints][0]
+          curY = self.target_points[self.totalPoints][1]
+          curT = self.target_points[self.totalPoints][2]*180/3.14
+          curT = (curT + by)%360
+          self.add_Target_Point((curX),(curY),(curT))
+
+robotList = []
+namesList = []
+robotColorsList = []
+robot_labels = []
+t_end = time.time() + 60 * 5
 
 def Fill_Start_Array():
     start_Array = np.array([[],[],[]])
@@ -68,7 +99,6 @@ def Update_Target_Array(pos):
     for i in range(len(robotList)):
         robotList[i].check_Position(i,pos)
         target_Array = np.append(target_Array,robotList[i].get_Output_Points(), axis = 1)
-    print(target_Array)
     return target_Array
 
 def Check_if_All_Done():
@@ -77,31 +107,50 @@ def Check_if_All_Done():
             return False
     return True
 
-def New_Robot(name, x,y,t):
-    namesList123.append(name)
+def New_Robot(name, x,y,t,color):
+    namesList.append(name)
     robotList.append(Robot(name,x,y,t))
+    robotColorsList.append(color)
 
 def Add_Target_Point(name, x,y,t):
-    robotList[namesList123.index(name)].add_Target_Point(x,y,t)
+    robotList[namesList.index(name)].add_Target_Point(x,y,t)
+curName = "Charlie"
+New_Robot(curName,1,1,90,'black')
 
-New_Robot("Bob",0,0,0)
-New_Robot("Kim",.8,.8,90)
+Add_Target_Point(curName,-1,-1,0)
 
-Add_Target_Point("Bob",.8,.8,180)
-Add_Target_Point("Kim",0,0,90)
+Add_Target_Point(curName,1,1,0)
 
 r = robotarium.Robotarium(number_of_robots=len(robotList), show_figure=True, initial_conditions=Fill_Start_Array(), sim_in_real_time=False)
 unicycle_position_controller = create_hybrid_unicycle_pose_controller()
 uni_barrier_cert = create_unicycle_barrier_certificate()
+_,uni_to_si_states = create_si_to_uni_mapping()
 x = r.get_poses()
 r.step()
 
-t_end = time.time() + 60 * 5
+robot_labels = [r.axes.text(x[0,namesList.index(kk)],x[1,namesList.index(kk)]+0.15,kk,fontsize=8, color=robotColorsList[namesList.index(kk)],fontweight='bold',horizontalalignment='center',verticalalignment='center',zorder=0)
+for kk in namesList]
+
+#for robotname in namesList:
+#      nameindex = namesList.index(robotname)
+#      print(nameindex)
+#      robot_labels.append([r.axes.text(x[0,nameindex],x[1,nameindex]+0.15,robotname, fontsize=8, color=robotColorsList[nameindex],fontweight='bold',horizontalalignment='center',verticalalignment='center',zorder=0)])
+#      print(robot_labels)
+
+
 while time.time() < t_end:
     x = r.get_poses()
+    xi =  uni_to_si_states(x)
+
     dxu = unicycle_position_controller(x, Update_Target_Array(x))
     dxu = uni_barrier_cert(dxu, x)
     r.set_velocities(np.arange(len(robotList)), dxu)    
+
+    for robotname in namesList:
+      nameindex = namesList.index(robotname)
+      robot_labels[nameindex].set_position([xi[0,nameindex],xi[1,nameindex]+0.15])
+      
+    
     r.step()
     if(Check_if_All_Done()):
         break

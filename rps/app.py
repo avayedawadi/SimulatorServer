@@ -4,6 +4,7 @@ import os
 import robotarium
 import robotarium_abc
 import numpy as np
+import time
 
 app = Flask(__name__)
 
@@ -17,8 +18,7 @@ def hello():
 
 @app.route('/simulationVideo',methods = ['POST'])
 def login():
-    runningCurrently = False
-    if request.method == 'POST' and not runningCurrently:
+    if request.method == 'POST':
         str1 = request.form['code']
         file = open("./static/text/Code.txt", "w")
         fileNum = file.write(str1)
@@ -38,12 +38,20 @@ def login():
         
         
         return url_for('display_video')
-    elif request.method == 'POST' and runningCurrently:
-        return '200'
+
+@app.route('/track',methods = ['GET'])
+def track():
+    if request.method == 'GET':
+        time.sleep(1)
+        if os.path.isfile('./images/1.png'):
+            return '200'
+        else:
+            return '100'
       
 
 @app.route('/display_video/video.mp4')
 def display_video():
 	#print('display_video filename: ' + filename)
 	return url_for('static', filename='uploads/' + 'video.mp4',code=301)
+
 
