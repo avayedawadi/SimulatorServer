@@ -17,12 +17,16 @@ def hello():
 
 @app.route('/simulationVideo',methods = ['POST'])
 def login():
-   if request.method == 'POST':
-        file = request.files['code']
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(app.config['UPLOAD_FOLDER'] + "/" + filename)
-            a = 'file uploaded'
+    runningCurrently = False
+    if request.method == 'POST' and not runningCurrently:
+        str1 = request.form['code']
+        file = open("./static/text/Code.txt", "w")
+        fileNum = file.write(str1)
+        file.close()
+        #if file:
+        #    filename = secure_filename(file.filename)
+        #    file.save(app.config['UPLOAD_FOLDER'] + "/" + filename)
+        #    a = 'file uploaded'
         
         #open text file in read mode
         text_file = open("./static/text/Code.txt", "r")
@@ -34,6 +38,8 @@ def login():
         
         
         return url_for('display_video')
+    elif request.method == 'POST' and runningCurrently:
+        return '200'
       
 
 @app.route('/display_video/video.mp4')
