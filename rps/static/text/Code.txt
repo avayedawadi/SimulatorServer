@@ -84,8 +84,6 @@ class Robot:
 
 robotList = []
 namesList = []
-robotColorsList = []
-robot_labels = []
 t_end = time.time() + 60 * 5
 
 def Fill_Start_Array():
@@ -107,50 +105,28 @@ def Check_if_All_Done():
             return False
     return True
 
-def New_Robot(name, x,y,t,color):
+def New_Robot(name, x,y,t):
     namesList.append(name)
     robotList.append(Robot(name,x,y,t))
-    robotColorsList.append(color)
 
 def Add_Target_Point(name, x,y,t):
     robotList[namesList.index(name)].add_Target_Point(x,y,t)
-curName = "Charlie"
-New_Robot(curName,1,1,90,'black')
-
-Add_Target_Point(curName,-1,-1,0)
+curName = "name"
+New_Robot(curName,0,0,90)
 
 Add_Target_Point(curName,1,1,0)
 
 r = robotarium.Robotarium(number_of_robots=len(robotList), show_figure=True, initial_conditions=Fill_Start_Array(), sim_in_real_time=False)
 unicycle_position_controller = create_hybrid_unicycle_pose_controller()
 uni_barrier_cert = create_unicycle_barrier_certificate()
-_,uni_to_si_states = create_si_to_uni_mapping()
 x = r.get_poses()
 r.step()
 
-robot_labels = [r.axes.text(x[0,namesList.index(kk)],x[1,namesList.index(kk)]+0.15,kk,fontsize=8, color=robotColorsList[namesList.index(kk)],fontweight='bold',horizontalalignment='center',verticalalignment='center',zorder=0)
-for kk in namesList]
-
-#for robotname in namesList:
-#      nameindex = namesList.index(robotname)
-#      print(nameindex)
-#      robot_labels.append([r.axes.text(x[0,nameindex],x[1,nameindex]+0.15,robotname, fontsize=8, color=robotColorsList[nameindex],fontweight='bold',horizontalalignment='center',verticalalignment='center',zorder=0)])
-#      print(robot_labels)
-
-
 while time.time() < t_end:
     x = r.get_poses()
-    xi =  uni_to_si_states(x)
-
     dxu = unicycle_position_controller(x, Update_Target_Array(x))
     dxu = uni_barrier_cert(dxu, x)
     r.set_velocities(np.arange(len(robotList)), dxu)    
-
-    for robotname in namesList:
-      nameindex = namesList.index(robotname)
-      robot_labels[nameindex].set_position([xi[0,nameindex],xi[1,nameindex]+0.15])
-      
-    
     r.step()
     if(Check_if_All_Done()):
         break
