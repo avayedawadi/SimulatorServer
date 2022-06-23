@@ -8,6 +8,7 @@ import matplotlib.patches as patches
 from robotarium_abc import *
 import re
 import random
+import moviepy.video.io.ImageSequenceClip
 
 # Robotarium This object provides routines to interface with the Robotarium.
 #
@@ -55,7 +56,7 @@ class Robotarium(RobotariumABC):
             Even if you don't want to print the errors, calling this function at the
             end of your script will enable execution on the Robotarium testbed.
             """
-            image_folder = './images'
+            """image_folder = './images'
             video_name = './static/uploads/video.mp4'
 
             images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
@@ -69,7 +70,17 @@ class Robotarium(RobotariumABC):
             for image in images:
                 video.write(cv2.imread(os.path.join(image_folder, image)))
 
-            video.release()
+            video.release()"""
+            image_folder='./images'
+            fps=30
+
+            images = [os.path.join(image_folder,img)
+               for img in os.listdir(image_folder)
+               if img.endswith(".png")]
+            
+            images = sorted(images, key=lambda x: (int(re.sub('\D','',x)),x))
+            clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(images, fps=fps)
+            clip.write_videofile('./static/uploads/video.mp4')
 
             dir = './images'
             filelist = glob.glob(os.path.join(dir, "*"))
@@ -90,7 +101,7 @@ class Robotarium(RobotariumABC):
             else:
                 print('No errors in your simulation! Acceptance of your experiment is likely!')
 
-            return video_name
+            return "Done"
 
         def step(self):
             """Increments the simulation by updating the dynamics.
