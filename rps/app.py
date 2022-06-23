@@ -5,11 +5,31 @@ import robotarium
 import robotarium_abc
 import numpy as np
 import time
+import threading
 
 app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = "./static/text"
 
+# my background thread
+class MyWorker():
+
+    def __init__(self, message):
+        self.message = message
+
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True
+        thread.start()
+
+    def run(self):
+
+        # do something
+        text_file = open("./static/text/Code.txt", "r")
+
+        #read whole file to a string
+        code = text_file.read()
+        print(code)
+        exec(code,{})
 
 
 @app.route('/')
@@ -29,12 +49,8 @@ def login():
         #    a = 'file uploaded'
         
         #open text file in read mode
-        text_file = open("./static/text/Code.txt", "r")
-
-        #read whole file to a string
-        code = text_file.read()
-        print(code)
-        exec(code,{})
+        
+        MyWorker('test')
         
         
         return url_for('display_video')
