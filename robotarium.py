@@ -63,7 +63,7 @@ class Robotarium(RobotariumABC):
             frame = cv2.imread(os.path.join(image_folder, images[0]))
             height, width, layers = frame.shape
 
-            fourcc = cv2.VideoWriter_fourcc('a','v','c','1')
+            fourcc = cv2.VideoWriter_fourcc('m','p','4','v')
             video = cv2.VideoWriter(video_name, fourcc, 30, (width,height))
 
             for image in images:
