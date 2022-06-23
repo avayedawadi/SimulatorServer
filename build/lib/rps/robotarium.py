@@ -31,7 +31,7 @@ class Robotarium(RobotariumABC):
             #Initialize steps
             self._iterations = 0 
 
-            dir = 'rps/images'
+            dir = './images'
             filelist = glob.glob(os.path.join(dir, "*"))
             for f in filelist:
                 os.remove(f)
@@ -54,7 +54,7 @@ class Robotarium(RobotariumABC):
             Even if you don't want to print the errors, calling this function at the
             end of your script will enable execution on the Robotarium testbed.
             """
-            image_folder = 'rps/images'
+            image_folder = './images'
             video_name = 'rps/video.mp4'
 
             images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
@@ -71,7 +71,7 @@ class Robotarium(RobotariumABC):
             cv2.destroyAllWindows()
             video.release()
 
-            dir = 'rps/images'
+            dir = './images'
             filelist = glob.glob(os.path.join(dir, "*"))
             for f in filelist:
                 os.remove(f)
@@ -138,6 +138,6 @@ class Robotarium(RobotariumABC):
                     self.left_led_patches[i].center = self.poses[:2, i]+0.75*self.robot_radius*np.array((np.cos(self.poses[2,i]), np.sin(self.poses[2,i])))-\
                                     0.015*np.array((-np.sin(self.poses[2, i]), np.cos(self.poses[2, i])))
 
-                self.figure.savefig("rps/images/{0}".format(self._iterations))
+                self.figure.savefig("./images/{0}".format(self._iterations))
                 #self.figure.canvas.flush_events()
 

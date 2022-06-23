@@ -7,7 +7,7 @@ import numpy as np
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = "./rps/static/text"
+app.config['UPLOAD_FOLDER'] = "./static/text"
 
 
 
@@ -21,11 +21,11 @@ def login():
         file = request.files['code']
         if file:
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(app.config['UPLOAD_FOLDER'] + "/" + filename)
             a = 'file uploaded'
         
         #open text file in read mode
-        text_file = open("./rps/static/text/Code.txt", "r")
+        text_file = open("./static/text/Code.txt", "r")
 
         #read whole file to a string
         code = text_file.read()
