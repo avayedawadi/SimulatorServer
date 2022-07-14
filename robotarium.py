@@ -79,7 +79,7 @@ class Robotarium(RobotariumABC):
             
             
             image_folder='rps/images/' + str(self.timestamp) 
-            fps=30
+            fps=10
 
             images = [os.path.join(image_folder,img)
                for img in os.listdir(image_folder)

@@ -40,7 +40,7 @@ class RobotariumABC(ABC):
         self.current_file_size = 0
 
         # Constants
-        self.time_step = 0.033
+        self.time_step = 0.1 #Default is 0.033
         self.robot_diameter = 0.11
         self.wheel_radius = 0.016
         self.base_length = 0.105
