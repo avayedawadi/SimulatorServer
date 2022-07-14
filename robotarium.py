@@ -9,6 +9,8 @@ from robotarium_abc import *
 import re
 import random
 import moviepy.video.io.ImageSequenceClip
+from datetime import datetime
+import shutil
 
 # Robotarium This object provides routines to interface with the Robotarium.
 #
@@ -33,10 +35,13 @@ class Robotarium(RobotariumABC):
             #Initialize steps
             self._iterations = 0 
 
-            dir = './images'
-            filelist = glob.glob(os.path.join(dir, "*"))
-            for f in filelist:
-                os.remove(f)
+            #dir = 'rps/images'
+            #filelist = glob.glob(os.path.join(dir, "*"))
+            #for f in filelist:
+            #    os.remove(f)
+            curr_dt = datetime.now()
+            self.timestamp = int(time.time())
+            os.mkdir('rps/images/' + str(self.timestamp))
 
         def get_poses(self):
             """Returns the states of the agents.
@@ -71,7 +76,9 @@ class Robotarium(RobotariumABC):
                 video.write(cv2.imread(os.path.join(image_folder, image)))
 
             video.release()"""
-            image_folder='./images'
+            
+            
+            image_folder='rps/images/' + str(self.timestamp) 
             fps=30
 
             images = [os.path.join(image_folder,img)
@@ -80,14 +87,44 @@ class Robotarium(RobotariumABC):
             
             images = sorted(images, key=lambda x: (int(re.sub('\D','',x)),x))
             clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(images, fps=fps)
-            clip.write_videofile('./static/uploads/video.mp4')
 
-            dir = './images'
-            filelist = glob.glob(os.path.join(dir, "*"))
-            for f in filelist:
-                os.remove(f)
+            
+            
 
+            clip.write_videofile('rps/static/uploads/'+str(self.timestamp)+'.mp4')
 
+            shutil.rmtree(image_folder)
+            #dir = 'rps/images'
+            #filelist = glob.glob(os.path.join(dir, "*"))
+            #for f in filelist:
+            #    os.remove(f)
+            
+            with open('rps/static/text/timestamp.txt', 'w') as f:
+                f.truncate(0)
+                f.write(str(self.timestamp))
+            
+            count = 0
+            # Iterate directory
+            for path in os.listdir('rps/static/uploads'):
+                # check if current path is a file
+                if os.path.isfile(os.path.join('rps/static/uploads', path)):
+                    count += 1
+            print(count)
+
+            smallestVideoInt = float('inf')
+            if(count > 25):
+                videoFileList = os.listdir('rps/static/uploads')
+                for video in videoFileList:
+                    if(video != '.keep'):
+                        intStr = video[0:-4]
+                        videoInt = int(intStr)
+                        if videoInt < smallestVideoInt:
+                            smallestVideoInt = videoInt
+                
+                os.remove('rps/static/uploads/' + str(smallestVideoInt) + '.mp4')
+            
+           
+            
             print('##### DEBUG OUTPUT #####')
             print('Your simulation will take approximately {0} real seconds when deployed on the Robotarium. \n'.format(math.ceil(self._iterations*0.033)))
 
@@ -100,7 +137,9 @@ class Robotarium(RobotariumABC):
                     print('\t Simulation had {0} {1}'.format(self._errors["actuator"], self._errors["actuator_string"]))
             else:
                 print('No errors in your simulation! Acceptance of your experiment is likely!')
+            
 
+            
             return "Done"
 
         def step(self):
@@ -149,6 +188,7 @@ class Robotarium(RobotariumABC):
                     self.left_led_patches[i].center = self.poses[:2, i]+0.75*self.robot_radius*np.array((np.cos(self.poses[2,i]), np.sin(self.poses[2,i])))-\
                                     0.015*np.array((-np.sin(self.poses[2, i]), np.cos(self.poses[2, i])))
 
-                self.figure.savefig("./images/{0}".format(self._iterations))
+
+                self.figure.savefig("rps/images/{0}/{1}".format(self.timestamp,self._iterations))
                 #self.figure.canvas.flush_events()
 
